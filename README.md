@@ -1,6 +1,6 @@
 ## About
 
-Data scraping of website via playwright
+Data scraping via playwright
 
 ## Getting started
 
