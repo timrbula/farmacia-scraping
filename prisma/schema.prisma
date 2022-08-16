@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pharmacy {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  name      String    @unique
+  country   String
+  url       String
+  Product   Product[]
+}
+
+model Product {
+  id                     String       @id @default(uuid())
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @default(now())
+  sku                    String
+  price                  Float
+  discountPrice          Float
+  currency               String
+  requiresPrescription   Boolean
+  isControlledMedication Boolean      @default(false)
+  pharmacy               Pharmacy     @relation(fields: [pharmacyId], references: [id])
+  pharmacyId             String
+  url                    String
+  imageUrl               String
+  ingredients            Ingredient[]
+}
+
+model Ingredient {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  name      String   @unique
+  amount    Int
+  unit      String
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+}
+
+model ScrapeActivity {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  status    Status
+}
+
+enum Status {
+  success
+  failure
+}

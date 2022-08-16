@@ -4,15 +4,22 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "tsx index.ts"
+    "scrape": "tsx index.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^4.2.1",
     "cheerio": "^1.0.0-rc.12",
     "node-fetch": "^3.2.10",
     "playwright": "^1.25.0",
     "tsx": "^3.8.2",
     "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.6",
+    "prisma": "^4.2.1"
   }
 }
