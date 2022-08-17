@@ -25,6 +25,7 @@ model Product {
   createdAt              DateTime     @default(now())
   updatedAt              DateTime     @default(now())
   sku                    String
+  upc                    String
   price                  Float
   discountPrice          Float
   currency               String
