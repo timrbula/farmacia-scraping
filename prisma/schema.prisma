@@ -20,6 +20,7 @@ model Pharmacy {
   Product   Product[]
 }
 
+// TODO: should we record the historical price and discountPrice? 
 model Product {
   id                     String       @id @default(uuid())
   createdAt              DateTime     @default(now())
@@ -42,7 +43,7 @@ model Ingredient {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  name      String   @unique
+  name      String
   amount    Int
   unit      String
   Product   Product? @relation(fields: [productId], references: [id])

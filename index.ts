@@ -1,5 +1,7 @@
 import playwright from "playwright";
 import * as fs from "fs";
+import { Status } from "@prisma/client";
+import type { Ingredient, Product, ScrapeActivity } from "@prisma/client";
 
 const productList = [
   "amlodipine",
@@ -23,17 +25,6 @@ const headers = {
   userAgent:
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
 };
-
-interface ProductData {
-  productName: string | null;
-  productDescription: string | null;
-  productUPC: string | null;
-  productPrice: string | null;
-  productItemNum: string | null;
-  informationName: string | null;
-  informationBrand: string | null;
-  informationCompany: string | null;
-}
 
 async function main() {
   const productDataList: ProductData[] = [];
@@ -82,26 +73,34 @@ async function main() {
     // For each url, go to the page and get the data
     for (let resultPath of resultPathList) {
       const data = await getDataForSanPabloProductPage(page, resultPath);
+
+      // Instead of pushing to list we can write to db
       productDataList.push(data);
     }
   }
 
+  // Instead of writing to file write to the database
+  // Write product to DB, then write ingredients, linked to the product
+  // Lastly record the scrape activity
   // Finally, write the data to the file and close the browser
   fs.writeFileSync("data.json", JSON.stringify(productDataList));
   await browser.close();
 }
 
+// TOOD: return 1. product data 2. list of ingredients
 async function getDataForSanPabloProductPage(page: playwright.Page, productPath: string): Promise<ProductData> {
   const productUrl = new URL(productPath, BASE_URL);
   console.log(`Navigating to ${productUrl.toString()}`);
   await page.goto(productUrl.toString());
 
+  let product: Product;
+  const ingredientList: Array<Ingredient> = [];
+
   // Scrape data from summary section
-  const productName = await page.locator("app-product-summary h3").textContent();
-  const productDescription = await page.locator("app-product-summary p >> nth=0").textContent();
-  const productUPC = await page.locator("app-product-summary p >> nth=1").textContent();
+  const name = await page.locator("app-product-summary h3").textContent();
+  const upc = await page.locator("app-product-summary p >> nth=1").textContent();
   const productItemNum = await page.locator("app-product-summary p >> nth=2").textContent();
-  const productPrice = await page.locator("h3.priceTotal").textContent();
+  const price = parseFloatFromText(await page.locator("h3.priceTotal").textContent());
 
   // Scrape data from information section
   const informationName = await page
@@ -135,6 +134,23 @@ async function getDataForSanPabloProductPage(page: playwright.Page, productPath:
     informationBrand,
     informationCompany,
   };
+}
+
+function parseIntFromText(text: string) {
+  Number.parseInt(text.match(/\d+/)?.[0] ?? "0");
+}
+
+function parseFloatFromText(text: string | null) {
+  if (text === null) {
+    /**
+     * TODO: what should this be stored as in the db
+     * I think we set it as null and have that as something to come back to
+     * and look at in the future, manually.
+     */
+    return null;
+  }
+
+  Number.parseInt(text.match(/\d+\.?\d{0,2}/)?.[0] ?? "0");
 }
 
 main();
